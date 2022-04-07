@@ -1,0 +1,82 @@
+---
+title: "Memory test on Drugged Islanders"
+author: "Dhruv Gupta"
+date: '`r Sys.Date()`'
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+An experiment on the effects of anti-anxiety medicine on memory recall when being primed with happy or sad memories. The participants were done on novel Islanders whom mimic real-life humans in response to external factors.
+
+Drugs of interest (known-as) [Dosage 1, 2, 3]:
+
+A - Alprazolam (Xanax, Long-term) [1mg/3mg/5mg]
+
+T - Triazolam (Halcion, Short-term) [0.25mg/0.5mg/0.75mg]
+
+S- Sugar Tablet (Placebo) [1 tab/2tabs/3tabs]
+
+### Dataset
+Source:
+https://www.kaggle.com/datasets/steveahn/memory-test-on-drugged-islanders-data
+
+## Driving Questions
+* How does anti-anxiety medicine affect you differently by age?
+
+* Is there a level of plateauing in effectiveness of anti-anxiety medicine - if so, at what point?
+
+* Effect of anti-anxiety medicine on memory recall?
+
+## Process Data
+```{r, echo=TRUE}
+library(readr)
+library(tidyverse)
+df <- read.csv("Z:\\Dhruv\\Case study\\Islander_data.csv")
+head(df)
+summary(df)
+```
+
+## Analysis
+``` {r, echo=TRUE}
+ggplot(data = df, mapping = aes(x = Drug, fill = Drug))+
+  geom_bar()
+```
+
+Even distribution of drugs in the dataset
+```
+diff_by_age <- df %>% mutate(age_range = cut(age, c(24,34,44,54,64,74,85))) %>% 
+  group_by(age_range) %>% 
+  summarise_at(vars(Diff), list(Diff = mean))
+diff_by_age
+```
+Age group 34-54 is most affected by the drugs, while age group 55-74 is least affected.
+``` {r, echo=TRUE}
+
+ggplot(data = df, mapping = aes(x = age, y = Mem_Score_Before))+
+  geom_col()
+ggplot(data = df, mapping = aes(x = age, y = Mem_Score_After))+
+  geom_col()
+ggplot(data = df, mapping = aes(x = Mem_Score_Before, y = Mem_Score_After))+
+  geom_jitter()+
+  geom_smooth()+
+  facet_wrap(vars(Drug))
+ggplot(data = df, mapping = aes(x = Mem_Score_Before, y = Mem_Score_After))+
+  geom_jitter()+
+  geom_smooth()+
+  facet_wrap(vars(Happy_Sad_group))
+ggplot(data = df, mapping = aes(x = Mem_Score_Before, y = Mem_Score_After,color = Happy_Sad_group))+
+  geom_jitter()+
+  geom_smooth()+
+  facet_wrap(vars(Drug))
+ggplot(data = df, mapping = aes(x = age, y = Diff))+
+  geom_jitter()+
+  geom_smooth()+
+  facet_wrap(vars(Drug))+
+  labs(caption = 'Drug A has most effect on memory recall, while drug T shows least effect.')
+```
